@@ -1,0 +1,17 @@
+*.aux
+*.log
+*.out
+resume.html
+resume.odt
+resume.pdf
+resume.rst
+resume.tex
+resume-htm.rst
+resume-odt.rst
+*.pdf
+resume-eml.tex
+resume-print.tex
+resume-pub.tex
+build
+.ropeproject
+out

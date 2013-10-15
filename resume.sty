@@ -1,0 +1,75 @@
+\usepackage{fontspec}		% for loading fonts
+\usepackage{xunicode,xltxtra}	% other packages for formatting
+
+% from RST
+\usepackage{fixltx2e} % LaTeX patches, \textsubscript
+\usepackage{cmap} % fix search and cut-and-paste in PDF
+\usepackage{ifthen}
+%\usepackage{babel}
+\usepackage{longtable}
+\usepackage{array}
+
+\setlength{\extrarowheight}{2pt}
+\newlength{\DUtablewidth} % internal use in tables
+
+% fieldlist environment
+\ifthenelse{\isundefined{\DUfieldlist}}{
+  \newenvironment{DUfieldlist}%
+    {\quote\description}
+    {\enddescription\endquote}
+}{}
+
+% inline markup (custom roles)
+% \DUrole{#1}{#2} tries \DUrole#1{#2}
+\providecommand*{\DUrole}[2]{%
+  \ifcsname DUrole#1\endcsname%
+    \csname DUrole#1\endcsname{#2}%
+  \else% backwards compatibility: try \docutilsrole#1{#2}
+    \ifcsname docutilsrole#1\endcsname%
+      \csname docutilsrole#1\endcsname{#2}%
+    \else%
+      #2%
+    \fi%
+  \fi%
+}
+
+% end from RST
+
+\usepackage{marvosym}
+\usepackage{url,parskip}
+\usepackage{color,graphicx}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{fullpage}
+\usepackage{longtable}
+\usepackage{titlesec}		% custom \section
+
+% FONTS
+\defaultfontfeatures{Mapping=tex-text}
+\newcommand{\fontReset}{\setmainfont[SmallCapsFont = Fontin SmallCaps]{Fontin}}
+\font\fb=''[cmr12]'' %for use with \LaTeX command
+
+\fontReset
+
+
+
+% Format of headers
+\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{5pt}{3pt}
+
+% Tweak the top margin a bit
+\addtolength{\voffset}{-1.3cm}
+
+\usepackage[absolute]{textpos}
+\setlength{\TPHorizModule}{30mm}
+\setlength{\TPVertModule}{\TPHorizModule}
+%\setlength{\footskip}{-10pt}
+\addtolength{\textheight}{3cm}
+\textblockorigin{2mm}{0.65\paperheight}
+\setlength{\parindent}{0pt}
+
+%\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\definecolor{linkcolour}{rgb}{0.1,0.1,0.1}
+\newcommand{\DUrolesc}{\textsc}
+\newcommand{\DUrolesmall}[1]{\footnotesize{#1}\normalsize}
+\newcommand{\DUroleleft}[1]{\textbf{#1}\hfill}
+\newcommand{\DUrolenl}[1]{{#1}\par}

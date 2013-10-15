@@ -1,0 +1,109 @@
+/*
+:Author: Your Name
+:Contact: Your Email Address
+:Copyright: This stylesheet has been placed in the public domain.
+
+Stylesheet for use with Docutils.  [Optionally place a more
+detailed description here.]
+*/
+
+/* Your customizations go here.  For example: */
+
+ul {
+    padding-left: 1.5em;
+}
+
+.right {
+    text-align: right;
+}
+
+.rststyle-table-personal, .rststyle-table-personal td {
+    border-width: 0px;
+}
+
+.rststyle-table-nothing, .rststyle-table-nothing td {
+    border-width: 0px;
+}
+
+.rststyle-table-wexp, .rststyle-table-wexp td {
+    border-width: 0px;
+    padding-bottom: 1em;
+}
+
+.wexpleft p {
+    margin-top: 0em;
+    margin-bottom: 0em;
+}
+
+.wexpleft .small.container {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.rststyle-table-wexp tr {
+}
+
+.wexpleft {
+    padding-left: 0.5em;
+    border-left: 1px solid #AAAAAA;
+}
+
+#work-experience .col-1 {
+    width: 7em;
+}
+
+#awards .col-1 {
+}
+
+#awards .dateleft {
+    text-align: right;
+    font-weight: bold;
+    font-size: 0.95em;
+}
+
+#preferred-software .col-1 {
+}
+
+#preferred-software .softright {
+    text-align: right;
+    font-weight: bold;
+    font-size: 0.95em;
+}
+
+#references .col-1 {
+    width: 12em;
+}
+#references .col-2 {
+    width: 20em;
+}
+#references .col-3 {
+    width: 12em;
+}
+
+#references .refleft {
+    text-align: left;
+    font-weight: bold;
+    font-size: 0.95em;
+}
+
+#references .center {
+    text-align: center;
+}
+
+#references .refright {
+    text-align: right;
+}
+
+h1.title {
+    text-align: left;
+}
+
+h1 {
+    font-size: 1.4em;
+    margin-bottom: -10px;
+    padding-bottom: 0;
+}
+
+table.docutils {
+    margin-top: 15px;
+}

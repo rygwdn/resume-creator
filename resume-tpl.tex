@@ -1,0 +1,173 @@
+\documentclass[letter,11pt]{article}
+
+\usepackage{resume}
+
+% Setup hyperref package
+\usepackage[colorlinks,
+    breaklinks,
+    urlcolor=linkcolour,
+    linkcolor=linkcolour,
+    pdftitle={$name},
+    pdfauthor={$name}]{hyperref}
+
+\newcolumntype{x}[1]{%
+    >{\raggedleft\hspace{0pt}}p{#1}}%
+
+%--------------------BEGIN DOCUMENT----------------------
+\begin{document}
+\pagestyle{empty} % non-numbered pages
+
+#filter $rst2tex
+
+\par{\centering{\Huge $name}\bigskip\par}
+
+
+%Section: Personal Data
+\section*{Personal Data}
+
+\begin{tabular}{rl}
+#for $item in  $personal
+    #if not ("pub" in item and "personal" not in $outp)
+        \textsc{$item.title:} & $item.content \\
+    #end if
+#end for
+\end{tabular}
+
+
+%Section: Summary **************************************
+\section*{Summary}
+$summary
+
+
+
+%Section: Education **************************************
+\section*{Education}
+
+$education
+
+
+%Section: Work Experience at the top **************************************
+\section*{Work Experience}
+
+#set $left="2.5cm"
+#set $right="13cm"
+
+\begin{longtable}{x{$left}|p{$right}}
+
+#for $item in $workexp
+
+    #set $supers = " \\& ".join($item.superv)
+
+    #if len($item.superv) > 1
+        #set $s = "s"
+    #else
+        #set $s = ""
+    #end if
+
+    #if $item.date[0] == "Current"
+        \emph{$item.date[0]}
+    #else
+        \textsc{$item.date[0]}
+    #end if
+
+    & $item.title \\*[-1.3em]
+
+    \vspace{-1.4em}
+
+    #if len($item.date) > 1
+    --
+        #if $item.date[1] == "Current"
+            \emph{$item.date[1]}
+        #else
+            \textsc{$item.date[1]}
+        #end if
+    #end if
+    
+    & \footnotesize{$item.content}\\*
+
+    #if "supervisors" in $outp
+        & Supervisor$s: \hfill $supers\\*
+    #end if
+
+    % blank space between items
+    \multicolumn{2}{c}{} \\
+
+#end for
+
+\end{longtable}
+
+
+
+
+
+
+%Section: Computer Skills *************************
+\section*{Computer Skills}
+
+\begin{samepage}
+\begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+#for $item in $computer_skills
+    \item $item
+#end for
+\end{itemize}
+\end{samepage}
+
+
+
+
+
+%Section: Awards *************************
+\section*{Awards}
+
+\begin{tabular}{rl}
+
+#for $item in $awards
+    $item.date & $item.name\\
+#end for
+
+\end{tabular}
+
+
+
+
+
+
+%Section: Volunteer Work & Extra Curricular *************************
+\section*{Volunteer Work \& Extra Curricular}
+
+\begin{samepage}
+\begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+#for $item in $volunteer
+    \item $item
+#end for
+\end{itemize}
+\end{samepage}
+
+
+
+
+#if "refs" in $outp
+
+\newpage
+
+% Section: References **********************************8
+\section*{References}
+\begin{tabular}{lcr}
+
+#for $item in $references
+$item.name & $item.job & $item.phone\\
+#end for
+
+\end{tabular}
+
+#end if
+
+#end filter
+
+\end{document}
