@@ -1,7 +1,7 @@
 \documentclass[letter,11pt]{article}
 
 \usepackage{resume}
-
+\usepackage{enumitem}% http://ctan.org/pkg/enumitem
 % Setup hyperref package
 \usepackage[colorlinks,
     breaklinks,
@@ -40,25 +40,25 @@ $summary
 
 
 
-%Section: Education **************************************
-\section*{Education}
-
-$education
-
-
 %Section: Work Experience at the top **************************************
 \section*{Work Experience}
 
 #set $left="2.5cm"
 #set $right="13cm"
 
+\setlength\LTleft{0cm}
+
 \begin{longtable}{x{$left}|p{$right}}
 
 #for $item in $workexp
 
-    #set $supers = " \\& ".join($item.superv)
+    #if "superv" in $item
+        #set $supers = " \\& ".join($item.superv)
+    #else
+        #set $supers = ""
+    #end if
 
-    #if len($item.superv) > 1
+    #if "superv" in $item and len($item.superv) > 1
         #set $s = "s"
     #else
         #set $s = ""
@@ -83,9 +83,21 @@ $education
         #end if
     #end if
     
-    & \footnotesize{$item.content}\\*
+    &
+    #if $item.content.strip().startswith("*")
+        \vspace{-1.6em}
+    #end if
+    {
+        %\setlist[itemize]{noitemsep}
+        \par{\small{$item.content}}
+    }
+    #if item.get("content_itemized", False) and "superv" in $item
+        \\*[-1em]
+    #else
+        \\*
+    #end if
 
-    #if "supervisors" in $outp
+    #if "superv" in $item
         & Supervisor$s: \hfill $supers\\*
     #end if
 
@@ -97,76 +109,46 @@ $education
 \end{longtable}
 
 
-
-
-
-
-%Section: Computer Skills *************************
-\section*{Computer Skills}
-
+%Section: Patents
+#if $patents
 \begin{samepage}
-\begin{itemize}
-    \setlength{\itemsep}{0pt}
-    \setlength{\parskip}{0pt}
-    \setlength{\parsep}{0pt}
-#for $item in $computer_skills
-    \item $item
-#end for
-\end{itemize}
-\end{samepage}
-
-
-
-
-
-%Section: Awards *************************
-\section*{Awards}
+\section*{Patents}
 
 \begin{tabular}{rl}
-
-#for $item in $awards
-    $item.date & $item.name\\
+#for $item in  $patents
+    $item.date: & $item.name \\
+                & $item.number \\
 #end for
+\end{tabular}
+\end{samepage}
 
+#end if
+
+%Section: Education **************************************
+\begin{samepage}
+\section*{Education}
+
+$education.summary
+
+\nopagebreak
+
+\begin{tabular}{rlll}
+#for $item in  $education.details
+$item.date: & $item.title & \textsc{$item.institution} & $item.location \\
+%    - date: 2012 
+%      title: Advanced C++
+%      institution: UCLA
+%      location: Waterloo, ON
+#end for
 \end{tabular}
 
-
-
-
-
-
-%Section: Volunteer Work & Extra Curricular *************************
-\section*{Volunteer Work \& Extra Curricular}
-
-\begin{samepage}
-\begin{itemize}
-    \setlength{\itemsep}{0pt}
-    \setlength{\parskip}{0pt}
-    \setlength{\parsep}{0pt}
-#for $item in $volunteer
-    \item $item
-#end for
-\end{itemize}
 \end{samepage}
 
 
 
 
-#if "refs" in $outp
 
-\newpage
 
-% Section: References **********************************8
-\section*{References}
-\begin{tabular}{lcr}
-
-#for $item in $references
-$item.name & $item.job & $item.phone\\
-#end for
-
-\end{tabular}
-
-#end if
 
 #end filter
 
