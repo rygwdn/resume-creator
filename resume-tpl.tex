@@ -237,7 +237,7 @@
 \section*{References}
 \begin{tabularx}{0.75\textwidth}{lCr}
 <@ for item in references @>
-    <<item.name|tex>> & <<item.job|tex>> & <<item.get("phone", "")|tex>>\\
+    <<item.name|tex>> & <<item.job|tex>> & <<item.get("phone", item.get("email", ""))|tex>>\\
 <@ endfor @>
 \end{tabularx}
 
@@ -249,4 +249,4 @@
 \end{document}
 %}}}
 
-% vim: fdm=marker fdls=0
+% vim: fdm=marker fdl=0
