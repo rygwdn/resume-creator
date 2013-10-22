@@ -1,66 +1,21 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import argparse, sys
+import argparse, sys, os
 
 import yaml
-from Cheetah.Template import Template
-from Cheetah.Filters import Filter
-from docutils import core
-
-
-RST_REPLACES = [
-        (r"--", r"-"),
-        (r"~", r" "),
-        ]
-
-LATEX_REPLACES = [
-        (r"LaTeX", r"{\fb \LaTeX} \fontReset"),
-        (r"\textasciitilde{}", r"~"),
-        (r"-{}-", r"--"),
-        ]
-
-namespace = []
-
-class CleanRst(Filter):
-    def filter(self, val, **kw):
-        out = unicode(val).strip()
-        for fr, to in RST_REPLACES:
-            out = out.replace(fr, to)
-        return out
-
-class StrpRst(CleanRst):
-    def filter(self, val, **kw):
-        out = CleanRst.filter(self, val, **kw)
-        out = out.replace(r"`", "")
-        out = out.replace(r":sc:", "")
-        return out
-
-class Rst2Tex(Filter):
-    def filter(self, val, **kw):
-        input = namespace["rst_init"].strip()
-        input += "\n\n\n"
-        input += unicode(val)
-        out = core.publish_parts(
-                source=input,
-                writer_name='latex'
-                )["body"]
-        out = out.strip()
-        for fr, to in LATEX_REPLACES:
-            out = out.replace(fr, to)
-        return out
+import jinja2
+import pypandoc
 
 def parse_args():
     parser = argparse.ArgumentParser(
             description='Creates a resume from a template')
-    parser.add_argument('data', metavar='DATA', type=file,
-            help='The data (YAML) file')
-    parser.add_argument('template', metavar='TEMPLATE', type=file, nargs='?',
-            help='The template file', default=sys.stdin)
-    parser.add_argument('output', metavar='OUT', type=argparse.FileType("w"), nargs='?',
-            help='The output file', default=sys.stdout)
-    parser.add_argument('-t', '--type', dest='type',  metavar='TYPE',
-            help='The type of output', choices=['htm','odt'], default='print')
+    parser.add_argument('data', metavar='DATA', type=argparse.FileType("r"), help='The data (YAML) file')
+    parser.add_argument('template', metavar='TEMPLATE', type=str, help='The template file')
+    parser.add_argument('output', metavar='OUT', type=argparse.FileType("w"), help='The output file')
+
+    #parser.add_argument('-t', '--type', dest='type',  metavar='TYPE',
+    #        help='The type of output', choices=['htm','odt'], default='print')
 
     parser.add_argument('--refs', '--references', dest='refs',
             action='store_true', default=False,
@@ -89,39 +44,71 @@ def parse_args():
 
     return parser.parse_args()
 
-def gen_namespace(ns):
-    ns["rst2tex"] = Rst2Tex
-    ns["clean_rst"] = CleanRst
-    ns["strp_rst"] = StrpRst
-    ns["outp"] = ["base"]
+def to_tex(ctx, value, format=None):
+    if not format and "format" in ctx:
+        format = ctx["format"]
+    elif not format:
+        format = "md"
+    init = format + "_init"
+    if init in ctx:
+        value = ctx[init] + "\n\n" + value
+    return pypandoc.convert(value, "tex", format=format, extra_args=("--smart",)).strip()
 
-    ns["tex_init"] = core.publish_parts(
-            ns["rst_init"].strip()
-            )
-    return ns
+@jinja2.contextfilter
+def any2tex(ctx, value):
+    return to_tex(ctx, value)
+
+@jinja2.contextfilter
+def md2tex(ctx, md):
+    return to_tex(ctx, md, format="md")
+
+@jinja2.contextfilter
+def rst2tex(ctx, rst):
+    return to_tex(ctx, md, format="rst")
+
+def create_env():
+    # change the default delimiters used by Jinja
+    # (prevent JinJa from interferring with LaTeX macros)
+    environment = jinja2.Environment(
+            block_start_string = '<@',
+            block_end_string = '@>',
+            variable_start_string = '<<',
+            variable_end_string = '>>',
+            comment_start_string = '<#',
+            comment_end_string = '#>',
+            autoescape = False,
+            auto_reload = False,
+            trim_blocks = True,
+            lstrip_blocks = True,
+            loader = jinja2.FileSystemLoader(os.path.abspath('.')))
+
+    environment.filters["md"] = md2tex
+    environment.filters["rst"] = rst2tex
+    environment.filters["tex"] = any2tex
+
+    return environment
+
+def get_input(data, args):
+    input = yaml.load(data.read())
+
+    if args.none or not args.refs:
+        if "references" in input:
+            del input["references"]
+    if args.none or not args.supervs:
+        for item in input["workexp"]:
+            if "superv" in item:
+                del item["superv"]
+    input["show_personal"] = not args.none and args.pers
+
+    return input
 
 def main():
-    global namespace
-
     args = parse_args()
-    namespace = gen_namespace(yaml.load(args.data.read()))
-    namespace['type'] = args.type
+    input = get_input(args.data, args)
+    environment = create_env()
+    template = environment.get_template(args.template)
+    args.output.write(template.render(input))
 
-    if not args.none:
-        if args.all or args.refs:
-            namespace['outp'] += ["references", "refs"]
-        if args.all or args.supervs:
-            namespace['outp'] += ["supervs", "supervisors"]
-        if args.all or args.pers:
-            namespace['outp'] += ["pers", "personal"]
-
-    template_def = args.template.read()
-
-    template = Template(template_def, [namespace])
-
-    args.output.write(str(template))
-    args.output.flush()
-    args.output.close()
 
 if __name__ == '__main__':
     main()

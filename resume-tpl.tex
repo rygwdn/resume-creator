@@ -1,14 +1,25 @@
+% Head {{{
 \documentclass[letter,11pt]{article}
 
 \usepackage{resume}
 \usepackage{enumitem}% http://ctan.org/pkg/enumitem
-% Setup hyperref package
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{tabularx}
+
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}%
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+\newcolumntype{C}{>{\centering\arraybackslash}X}%
+
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist
+
 \usepackage[colorlinks,
     breaklinks,
     urlcolor=linkcolour,
     linkcolor=linkcolour,
-    pdftitle={$name},
-    pdfauthor={$name}]{hyperref}
+    pdftitle={<<name>>},
+    pdfauthor={<<name>>}]{hyperref}
 
 \newcolumntype{x}[1]{%
     >{\raggedleft\hspace{0pt}}p{#1}}%
@@ -17,139 +28,225 @@
 \begin{document}
 \pagestyle{empty} % non-numbered pages
 
-#filter $rst2tex
+% }}}
+% Title {{{
+\par{\centering{\Huge <<name>>}\bigskip\par}
 
-\par{\centering{\Huge $name}\bigskip\par}
-
-
-%Section: Personal Data
+%}}}
+% Personal Data {{{
 \section*{Personal Data}
 
-\begin{tabular}{rl}
-#for $item in  $personal
-    #if not ("pub" in item and "personal" not in $outp)
-        \textsc{$item.title:} & $item.content \\
-    #end if
-#end for
-\end{tabular}
+<@ if personal_cols and personal_cols > 1 @>
+    <@ set tabs = "Rl" * (personal_cols - 1) @>
+    <@ set cyc = (["&"] * (personal_cols - 1)) + ["\\\\"] @>
+<@ else @>
+    <@ set tabs = "" @>
+    <@ set cyc = ["\\\\"] @>
+<@ endif @>
 
+\begin{tabularx}{\textwidth}{rl<<tabs>>}
+<@ for item in  personal @>
+    <@ if not ("pub" in item and not show_personal ) @>
+    \textsc{<<item.title|tex>>:} & <<item.content|tex>> << loop.cycle(*cyc) >>
+    <@ endif @>
+<@endfor@>
+\end{tabularx}
 
-%Section: Summary **************************************
+% }}}
+% Summary {{{
 \section*{Summary}
-$summary
+<< summary|tex >>
 
-
-
-%Section: Work Experience at the top **************************************
+% }}}
+% Work Experience {{{
 \section*{Work Experience}
 
-#set $left="2.5cm"
-#set $right="13cm"
+<@ set left="2.5cm" @>
+<@ set right="13cm" @>
 
 \setlength\LTleft{0cm}
 
-\begin{longtable}{x{$left}|p{$right}}
+\begin{longtable}{x{<< left >>}|p{<< right >>}}
+<@ for item in workexp @>
+    <@ if "superv" in item @>
+        <@ set supers = " \\& ".join(item.superv) @>
+    <@ else @>
+        <@ set supers = "" @>
+    <@ endif @>
+    <@ if "superv" in item and item.superv|length > 1 @>
+        <@ set s = "s" @>
+    <@ else @>
+        <@ set s = "" @>
+    <@ endif @>
 
-#for $item in $workexp
+    % From Date
+    \textsc{<<item.date[0]>>}
 
-    #if "superv" in $item
-        #set $supers = " \\& ".join($item.superv)
-    #else
-        #set $supers = ""
-    #end if
+    % Title line
+    & << item.title|tex >> \\*[-1.3em]
 
-    #if "superv" in $item and len($item.superv) > 1
-        #set $s = "s"
-    #else
-        #set $s = ""
-    #end if
+    <@ if item.date|length > 1 @>
+        \vspace{-1.4em}
 
-    #if $item.date[0] == "Current"
-        \emph{$item.date[0]}
-    #else
-        \textsc{$item.date[0]}
-    #end if
+        % To date (needs to be hacked into two lines to make the spacing work)
+        --~
+        <@- if item.date[1] == "Current" -@>
+            \emph{<<item.date[1]>>}
+        <@- else -@>
+            \textsc{<<item.date[1]>>}
+        <@- endif @>
+    <@ endif @>
 
-    & $item.title \\*[-1.3em]
+    % Content
+    & \hangindent=0.33em\hangafter=0\small{
+    <@- if item.content @>
+        <<-item.content|tex>>
+    <@ endif @>
+    <@- if item.content_itemized @>
 
-    \vspace{-1.4em}
+        \begin{itemize}[nolistsep,leftmargin=1.33em]
+            <@ if not item.content -@>
+            % Handle extra space from not having summary paragraph
+            \vspace{-1em}
+            <@- endif @>
 
-    #if len($item.date) > 1
-    --
-        #if $item.date[1] == "Current"
-            \emph{$item.date[1]}
-        #else
-            \textsc{$item.date[1]}
-        #end if
-    #end if
-    
-    &
-    #if $item.content.strip().startswith("*")
-        \vspace{-1.6em}
-    #end if
-    {
-        %\setlist[itemize]{noitemsep}
-        \par{\small{$item.content}}
-    }
-    #if item.get("content_itemized", False) and "superv" in $item
-        \\*[-1em]
-    #else
-        \\*
-    #end if
+            <@ for bullet in item.content_itemized @>
+                \item << bullet|tex >>
+            <@ endfor @>
 
-    #if "superv" in $item
-        & Supervisor$s: \hfill $supers\\*
-    #end if
+            \vspace{-1em}
+        \end{itemize}
+    <@ endif -@>
+    } \\*
 
+    % Supervisors
+    <@ if "superv" in item @>
+        & Supervisor<<s>>: \hfill <<supers|tex>> \\*
+    <@ endif @>
+
+    <@ if not loop.last @>
     % blank space between items
     \multicolumn{2}{c}{} \\
-
-#end for
+    <@ endif @>
+<@ endfor @>
 
 \end{longtable}
 
+% }}}
+% Education {{{
 
-%Section: Patents
-#if $patents
+<@ if education @>
+
+\begin{samepage}
+\section*{Education}
+<@ if education.summary -@>
+<< education.summary|tex >>
+<@- endif @>
+
+<@- if education.summary and education.details @>
+
+    \nopagebreak
+
+<@ endif -@>
+
+<@ if education.details -@>
+    \begin{tabularx}{\textwidth}{rllL}
+    %\begin{tabular}{rlll}
+    <@ for item in  education.details @>
+        <<item.date>>: & <<item.title>> & \textsc{<<item.institution>>} & <<item.location>> \\
+    <@ endfor @>
+    \end{tabularx}
+<@- endif @>
+
+\end{samepage}
+<@ endif @>
+
+% }}}
+% Computer Skills {{{
+<@ if computer_skills @>
+\begin{samepage}
+\section*{Computer Skills}
+
+\begin{itemize}[leftmargin=1.5em]
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+<@ for item in computer_skills @>
+    \item <<item|tex>>
+<@ endfor @>
+\end{itemize}
+\end{samepage}
+<@ endif @>
+
+
+% }}}
+% Awards {{{
+<@ if awards @>
+\begin{samepage}
+\section*{Awards}
+
+\begin{tabular}{rl}
+<@ for item in awards @>
+    <<item.date|tex>> & <<item.name|tex>>\\
+<@ endfor @>
+\end{tabular}
+\end{samepage}
+<@ endif @>
+
+%}}}
+% Volunteer {{{
+
+<@ if volunteer @>
+%Section: Volunteer Work & Extra Curricular *************************
+\section*{Volunteer Work \& Extra Curricular}
+
+\begin{samepage}
+\begin{itemize}[leftmargin=1.5em]
+    \setlength{\itemsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parsep}{0pt}
+<@ for item in volunteer @>
+    \item <<item|tex>>
+<@ endfor @>
+\end{itemize}
+\end{samepage}
+<@ endif @>
+
+%}}}
+% Patents {{{
+
+<@ if patents @>
 \begin{samepage}
 \section*{Patents}
 
 \begin{tabular}{rl}
-#for $item in  $patents
-    $item.date: & $item.name \\
-                & $item.number \\
-#end for
+<@ for item in  patents @>
+    << item.date >>: & << item.name >> \\
+                & << item.number >> \\
+<@ endfor @>
 \end{tabular}
 \end{samepage}
+<@ endif @>
 
-#end if
+%}}}
+% References {{{
 
-%Section: Education **************************************
-\begin{samepage}
-\section*{Education}
+<@ if references @>
+\newpage
 
-$education.summary
+\section*{References}
+\begin{tabularx}{0.75\textwidth}{lCr}
+<@ for item in references @>
+    <<item.name|tex>> & <<item.job|tex>> & <<item.get("phone", "")|tex>>\\
+<@ endfor @>
+\end{tabularx}
 
-\nopagebreak
+<@ endif @>
 
-\begin{tabular}{rlll}
-#for $item in  $education.details
-$item.date: & $item.title & \textsc{$item.institution} & $item.location \\
-%    - date: 2012 
-%      title: Advanced C++
-%      institution: UCLA
-%      location: Waterloo, ON
-#end for
-\end{tabular}
-
-\end{samepage}
-
-
-
-
-
-
-
-#end filter
+%}}}
+% Tail {{{
 
 \end{document}
+%}}}
+
+% vim: fdm=marker fdls=0

@@ -1,31 +1,50 @@
 ---
 name : "John Doe"
 
-rst_init : |
-    .. role:: sc
-    .. role:: small
+#format: "rst"
+#rst_init : |
+#    .. role:: sc
+#    .. role:: small
 
+# pre-pended to all parsed markdown
+md_init: ""
+format: "md"
+
+# Number of columns to use for personal data below
+personal_cols: 2
+# List of personal/contact info for the header
 personal :
     - title:   Address
       content: 1234 Some Rd., NS, Canada
       pub:     No
       htm:     No
     - title:   Phone
-      content: +1~(555)~555-5555
+      content: +1 (555) 555-5555
       htm:     No
       pub:     No
     - title:   Email
       content: john.doe@gmail.com
     - title:   Website
-      content: "`johndoe.com <http://johndoe.com>`_"
+      content: "[johndoe.com](http://johndoe.com>)"
 
 
 summary : |
   I do **stuff** which is *Cool*.
 
-
-education : |
-  I have some education from :sc:`Some University`.
+education :
+  # Optional summary
+  summary: |
+    I have some education from \textsc{Some University}.
+  # Optional details
+  details:
+    - date: 2013
+      title: Course I took
+      institution: Some University
+      location: Some Place
+    - date: 2012
+      title: Other Course I took
+      institution: Some Other University
+      location: Some Other Place
 
 
 workexp :
@@ -33,32 +52,38 @@ workexp :
       title: Job Description at Some Company
       content: |
         I did **Stuff** for *Them*.
-      superv: [Mr. Boss]
-      phone: (555) 555-5555
-      email: mr.boss@somecompany.com
+      #superv is optional
+      #superv: [Mr. Boss Man]
+      email: mr.boss@somecompany.example.com
 
     - date: [ Jan 2011, May 2011 ]
       title: Job Description at Some Other Company
       content: |
         I did **Other stuff** for *Others*.
+      content_itemized:
+        - Did a Thing
+        - Did another Thing
       superv: [Dr. Dude]
-      phone: (555) 555-5555
-      email: dude@socompany.com
-      # Do an odtbreak where you want the table to be split in the odt output (yes, this is a hack for now)
-      #odtbreak: Yes
+      email: dude@socompany.example.com
+
+    - date: [ Jan 2011, May 2011 ]
+      title: Job Description at Yet Another Company
+      content_itemized:
+        - Did stuff
+        - Did more stuff
+      superv: [Dude McDuderson]
+      email: dude@yac.example.com
 
 
 computer_skills:
     - Worked with Some Program
     - Know how to write Some Language
 
-
 awards:
-    - date: :sc:`June` 2011
+    - date: June 2011
       name: Some Award I Got
     - date: Dec 2010
       name: Some Other Award I Got
-
 
 volunteer:
     - |
@@ -68,15 +93,20 @@ volunteer:
     - I do a bit here and there.
 
 references:
-    - name:  Mr.~Boss
+    - name:  Mr. Boss
       job: Some Company
-      phone: (555)~555-5555
+      phone: "\\(555) 555-5555"
       email: mr.boss@somecompany.com
 
-    - name:  Dr.~Dude
+    - name:  Dr. Dude
       job: Some Other Company
-      phone: (555)~555-5555
+      phone: "\\(555) 555-5555"
       email: dude@socompany.com
+
+patents:
+    - number: United States 12345678910
+      date: June 2008
+      name: Thing I Have a Patent For
 
 ...
 # vim: spell sts=2 sw=2
