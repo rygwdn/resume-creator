@@ -20,6 +20,7 @@
     linkcolor=linkcolour,
     pdftitle={<<name>>},
     pdfauthor={<<name>>}]{hyperref}
+\newcommand{\name}{<<name>>}
 
 \newcolumntype{x}[1]{%
     >{\raggedleft\hspace{0pt}}p{#1}}%
@@ -50,6 +51,9 @@
     \textsc{<<item.title|tex>>:} & <<item.content|tex>> << loop.cycle(*cyc) >>
     <@ endif @>
 <@endfor@>
+<@ for x in range(0, personal|length % personal_cols) @>
+    << loop.cycle(*cyc) >>
+<@ endfor @>
 \end{tabularx}
 
 % }}}

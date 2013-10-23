@@ -1,5 +1,9 @@
-\usepackage{fontspec}		% for loading fonts
-\usepackage{xunicode,xltxtra}	% other packages for formatting
+\usepackage{ifxetex}
+
+\ifxetex
+    \usepackage{fontspec}		% for loading fonts
+    \usepackage{xunicode,xltxtra}	% other packages for formatting
+\fi
 
 % from RST
 \usepackage{fixltx2e} % LaTeX patches, \textsubscript
@@ -12,29 +16,6 @@
 \setlength{\extrarowheight}{2pt}
 \newlength{\DUtablewidth} % internal use in tables
 
-% fieldlist environment
-\ifthenelse{\isundefined{\DUfieldlist}}{
-  \newenvironment{DUfieldlist}%
-    {\quote\description}
-    {\enddescription\endquote}
-}{}
-
-% inline markup (custom roles)
-% \DUrole{#1}{#2} tries \DUrole#1{#2}
-\providecommand*{\DUrole}[2]{%
-  \ifcsname DUrole#1\endcsname%
-    \csname DUrole#1\endcsname{#2}%
-  \else% backwards compatibility: try \docutilsrole#1{#2}
-    \ifcsname docutilsrole#1\endcsname%
-      \csname docutilsrole#1\endcsname{#2}%
-    \else%
-      #2%
-    \fi%
-  \fi%
-}
-
-% end from RST
-
 \usepackage{marvosym}
 \usepackage{url,parskip}
 \usepackage{color,graphicx}
@@ -43,13 +24,13 @@
 \usepackage{longtable}
 \usepackage{titlesec}		% custom \section
 
-% FONTS
-\defaultfontfeatures{Mapping=tex-text}
-\newcommand{\fontReset}{\setmainfont[SmallCapsFont = Fontin SmallCaps]{Fontin}}
-\font\fb=''[cmr12]'' %for use with \LaTeX command
-
-\fontReset
-
+\ifxetex
+    % FONTS
+    \defaultfontfeatures{Mapping=tex-text}
+    \newcommand{\fontReset}{\setmainfont[SmallCapsFont = Fontin SmallCaps]{Fontin}}
+    \font\fb=''[cmr12]'' %for use with \LaTeX command
+    \fontReset
+\fi
 
 
 % Format of headers

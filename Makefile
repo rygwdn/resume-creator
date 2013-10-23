@@ -1,7 +1,7 @@
 OPENER=gnome-open
 IN_FILE=resume.yml
 
-all: out/resume-eml.pdf out/resume-pub.pdf out/resume-print.pdf # out/resume.html out/resume.odt
+all: out/resume-eml.pdf out/resume-pub.pdf out/resume-print.pdf out/resume.odt # out/resume.html
 open: out/resume-print.pdf
 	${OPENER} out/resume-print.pdf
 refresh: out/resume-print.pdf
@@ -25,10 +25,11 @@ build/resume-htm.rst: resume-tpl.rst ${IN_FILE} resume.py
 # out/resume.odt {{{
 
 build/resume-odt.rst: resume-tpl.rst ${IN_FILE} resume.py
-	./resume.py -t odt ${IN_FILE} resume-tpl.rst build/resume-odt.rst
+	./resume.py --tex --all --references ${IN_FILE} resume-tpl.rst build/resume-odt.rst
 
-out/resume.odt: build/resume-odt.rst styles.odt
+out/resume.odt: build/resume-odt.rst styles.odt post_process_odt.py
 	rst2odt.py --stylesheet=styles.odt build/resume-odt.rst out/resume.odt
+	post_process_odt.py
 
 # }}}
 # out/resume-*.pdf {{{
@@ -36,6 +37,10 @@ out/resume.odt: build/resume-odt.rst styles.odt
 out/resume-pub.pdf: build/resume-pub.tex build/resume.sty
 	cd build && xelatex -interaction=nonstopmode resume-pub.tex
 	mv -f build/resume-pub.pdf out/resume-pub.pdf
+
+out/resume-print.css out/resume-print.html: build/resume-print.tex build/resume.sty
+	cd build && mk4ht htlatex resume-print.tex "xhtml, charset=utf-8" " -cunihtf -utf8" 
+	mv -f build/resume-print.css build/resume-print.html out/
 
 out/resume-print.pdf: build/resume-print.tex build/resume.sty
 	cd build && xelatex -interaction=nonstopmode resume-print.tex
@@ -50,13 +55,13 @@ build/resume.sty: resume.sty
 	cp resume.sty build/resume.sty
 
 build/resume-pub.tex: resume-tpl.tex ${IN_FILE} resume.py
-	./resume.py --none ${IN_FILE} resume-tpl.tex build/resume-pub.tex
+	./resume.py --tex --none ${IN_FILE} resume-tpl.tex build/resume-pub.tex
 
 build/resume-print.tex: resume-tpl.tex ${IN_FILE} resume.py
-	./resume.py --all --references ${IN_FILE} resume-tpl.tex build/resume-print.tex
+	./resume.py --tex --all --references ${IN_FILE} resume-tpl.tex build/resume-print.tex
 
 build/resume-eml.tex: resume-tpl.tex ${IN_FILE} resume.py
-	./resume.py --noreferences ${IN_FILE} resume-tpl.tex build/resume-eml.tex
+	./resume.py --tex --noreferences ${IN_FILE} resume-tpl.tex build/resume-eml.tex
 
 # }}}
 # clean {{{

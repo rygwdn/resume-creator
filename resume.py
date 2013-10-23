@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import argparse, sys, os
+import re
 
 import yaml
 import jinja2
@@ -14,8 +15,7 @@ def parse_args():
     parser.add_argument('template', metavar='TEMPLATE', type=str, help='The template file')
     parser.add_argument('output', metavar='OUT', type=argparse.FileType("w"), help='The output file')
 
-    #parser.add_argument('-t', '--type', dest='type',  metavar='TYPE',
-    #        help='The type of output', choices=['htm','odt'], default='print')
+    parser.add_argument('--tex', action='store_true', default=False, help='use tex-style jinja tags')
 
     parser.add_argument('--refs', '--references', dest='refs',
             action='store_true', default=False,
@@ -44,47 +44,83 @@ def parse_args():
 
     return parser.parse_args()
 
-def to_tex(ctx, value, format=None):
-    if not format and "format" in ctx:
-        format = ctx["format"]
-    elif not format:
-        format = "md"
-    init = format + "_init"
+def to_format(ctx, value, to_format, from_format=None, extra_args=None):
+    extra_args = extra_args or tuple()
+    if not from_format and "format" in ctx:
+        from_format = ctx["format"]
+    elif not from_format:
+        from_format = "md"
+    init = from_format + "_init"
+    #print "in:", [value, to_format, from_format, ("--smart",) + extra_args]
     if init in ctx:
-        value = ctx[init] + "\n\n" + value
-    return pypandoc.convert(value, "tex", format=format, extra_args=("--smart",)).strip()
+        value = ctx[init] + "\n\n" + unicode(value)
+    #print "out:",
+    #sys.stdout.write(unicode(pypandoc.convert(value, to_format, format=from_format, extra_args=("--smart",) + extra_args).strip()).encode('utf8'))
+    #print
+    #print
+    return pypandoc.convert(value, to_format, format=from_format, extra_args=("--smart",) + extra_args).strip()
 
 @jinja2.contextfilter
 def any2tex(ctx, value):
-    return to_tex(ctx, value)
+    return to_format(ctx, value, "tex")
+
+def caser(m):
+    out = ":sc:{{"
+    level = 0
+    for chr in m.group(1):
+        if chr == "{" and level >= 0:
+            level += 1
+        if chr == "}" and level >= 0:
+            level -= 1
+            if level < 0:
+                out += ">>>>"
+                continue
+        out += chr
+    if level >= 0:
+        out += "}}:sc:"
+    return out
+
+sc_pat = re.compile(r"\\textsc\{(.*)\}")
 
 @jinja2.contextfilter
-def md2tex(ctx, md):
-    return to_tex(ctx, md, format="md")
+def any2rst(ctx, value):
+    # HACK HACK HACK HACK
+    value = unicode(value)
+    v = value[:]
+    while sc_pat.search(value):
+        value = sc_pat.sub(caser, value)
+    out = to_format(ctx, value, "rst", extra_args=("--parse-raw","--filter=./delink.py"))
+    out = out.replace(":sc:{{", ":sc:`").replace("}}:sc:", "`")
+    return out
 
 @jinja2.contextfilter
-def rst2tex(ctx, rst):
-    return to_tex(ctx, md, format="rst")
+def cmToTbl(ctx, value):
+    value = float(value)
+    return int(value * (12.0 / 2.54))
 
-def create_env():
+def create_env(tex):
     # change the default delimiters used by Jinja
     # (prevent JinJa from interferring with LaTeX macros)
+    tex_args = {}
+    if tex:
+        tex_args = {
+                "block_start_string": '<@',
+                "block_end_string": '@>',
+                "variable_start_string": '<<',
+                "variable_end_string": '>>',
+                "comment_start_string": '<#',
+                "comment_end_string": '#>',
+                }
     environment = jinja2.Environment(
-            block_start_string = '<@',
-            block_end_string = '@>',
-            variable_start_string = '<<',
-            variable_end_string = '>>',
-            comment_start_string = '<#',
-            comment_end_string = '#>',
             autoescape = False,
             auto_reload = False,
             trim_blocks = True,
             lstrip_blocks = True,
-            loader = jinja2.FileSystemLoader(os.path.abspath('.')))
+            loader = jinja2.FileSystemLoader(os.path.abspath('.')), **tex_args)
 
-    environment.filters["md"] = md2tex
-    environment.filters["rst"] = rst2tex
     environment.filters["tex"] = any2tex
+    environment.filters["rst"] = any2rst
+    environment.filters["cmToTbl"] = cmToTbl
 
     return environment
 
@@ -103,11 +139,15 @@ def get_input(data, args):
     return input
 
 def main():
+    # Hack to default to utf8
+    reload(sys)
+    sys.setdefaultencoding('UTF-8')
+
     args = parse_args()
     input = get_input(args.data, args)
-    environment = create_env()
+    environment = create_env(args.tex)
     template = environment.get_template(args.template)
-    args.output.write(template.render(input))
+    args.output.write(unicode(template.render(input)).encode('utf8'))
 
 
 if __name__ == '__main__':
