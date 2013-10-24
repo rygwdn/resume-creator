@@ -43,7 +43,7 @@ Work Experience
     total width is 17.27cm
     first col is 2.14cm
     #>
-    :widths: <<2.14|cmToTbl>> <<(17.27 - 2.14)|cmToTbl>>
+    :widths: <<2.5|cmToTbl>> <<(17.27 - 2.5)|cmToTbl>>
     :header-rows: 0
     :class: rststyle-table-wexp
 
@@ -55,17 +55,14 @@ Work Experience
         <@ set s = "" @>
     <@ endif @>
 
-    <@ if item.date[0] == "Current" @>
-    * - | *<<item.date[0]|rst|indent(4)>>*
-    <@ else @>
-    * - | <<item.date[0]|rst|indent(4)>>
-    <@ endif -@>
+    * - .. container:: right
 
-    <@- if item.date|length > 1 @>
+            | <<item.date[0]|rst|indent(4)>>
+    <@ if item.date|length > 1 @>
         <@ if item.date[1] == "Current" @>
-        | – *<<item.date[1]|rst|indent(8)>>*
+            | – *<<item.date[1]|rst|indent(8)>>*
         <@ else @>
-        | – <<item.date[1]|rst|indent(8)>>
+            | – <<item.date[1]|rst|indent(8)>>
         <@ endif @>
     <@ endif @>
 
@@ -78,17 +75,20 @@ Work Experience
             .. container:: small
 
                 <@ if item.content @>
-                    <<item.content|rst|indent(21)>>
+                    <<item.content|rst|indent(20)>>
                 <@ endif @>
 
                 <@ for bullet in item.content_itemized @>
-                    - << bullet|rst|indent(25)>>
+                    - .. container:: small-bulletitem
+
+                          << bullet|rst|indent(26)>>
+
                 <@ endfor @>
 
             <@ if type != "pub" @>
             .. container:: right
 
-                `Supervisor<<s>>:`:left: `<<supers|rst>>`:right:
+                `Supervisor<<s>>:`:left: `<<supers>>`:right:
             <@ endif @>
 
 <@ endfor @>
@@ -100,14 +100,31 @@ Education
 
 <@ if education.summary -@>
 << education.summary|rst >>
-<@- endif @>
+<@ endif @><@ if education.details @>
 
-% TODO: table below (?)
+.. list-table::
+   :widths: <<2|cmToTbl>> <<(3)|cmToTbl>> <<(6)|cmToTbl>> <<(17.27 - 10)|cmToTbl>>
+   :header-rows: 0
+   :class: rststyle-table-nothing
 
-<@ if education.details -@>
-    <@ for item in  education.details @>
-        - <<item.date|rst>>: <<item.title|rst>>, :sc:`<<item.institution|rst>>`, <<item.location|rst>>
-    <@ endfor @>
+   <@ for item in  education.details @>
+   * - .. container:: edu-right
+
+            <<item.date>>:
+
+     - .. container:: shortpar
+
+            <<item.title>>
+
+     - .. container:: edu-center
+
+            :sc:`<<item.institution>>`
+
+     - .. container:: shortpar
+
+             <<item.location>>
+
+   <@ endfor @>
 <@- endif @>
 
 
@@ -158,9 +175,6 @@ Volunteer Work & Extra Curricular
 
 Patents
 -------
-
-% TODO: tabular below
-% TODO: wrap all all the blocks in ifs
 
 <@ for item in  patents @>
 - << item.date|rst>>: << item.name|rst>>, << item.number|rst>>

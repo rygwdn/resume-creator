@@ -28,7 +28,7 @@ build/resume-odt.rst: resume-tpl.rst ${IN_FILE} resume.py
 	./resume.py --tex --all --references ${IN_FILE} resume-tpl.rst build/resume-odt.rst
 
 out/resume.odt: build/resume-odt.rst styles.odt post_process_odt.py
-	rst2odt.py --stylesheet=styles.odt build/resume-odt.rst out/resume.odt
+	rst2odt.py --traceback --stylesheet=styles.odt build/resume-odt.rst out/resume.odt
 	post_process_odt.py
 
 # }}}
