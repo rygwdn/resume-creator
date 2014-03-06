@@ -11,7 +11,14 @@ watch:
 	    --recursive \
 	    --ignore-patterns="*.log;*Vagrantfile" \
 	    --command='echo $${watch_src_path}; make refresh'
+watchv:
+	watchmedo shell-command \
+	    --wait \
+	    --ignore-patterns="*.log;*Vagrantfile" \
+	    --ignore-directories \
+	    --command='echo $${watch_src_path}; vagrant ssh -c "make -C /vagrant refresh"'
 go: watch open
+gov: watchv open
 
 spell spellcheck:
 	aspell --lang=en_CA --add-filter=tex --add-filter=url -c ${IN_FILE}
