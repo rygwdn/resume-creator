@@ -5,8 +5,13 @@ all: out/resume-eml.pdf out/resume-pub.pdf out/resume-print.pdf out/resume.odt o
 open: out/resume-print.pdf
 	${OPENER} out/resume-print.pdf
 refresh: out/resume-print.pdf
-go: open
-	nosier -i 'make refresh'
+watch:
+	watchmedo shell-command \
+	    --wait \
+	    --recursive \
+	    --ignore-patterns="*.log;*Vagrantfile" \
+	    --command='echo $${watch_src_path}; make refresh'
+go: watch open
 
 spell spellcheck:
 	aspell --lang=en_CA --add-filter=tex --add-filter=url -c ${IN_FILE}

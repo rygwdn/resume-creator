@@ -2,6 +2,6 @@ Jinja2==2.7.1
 PyYAML==3.10
 docutils==0.11
 ezodf2==0.2.10
-nosier==1.1
 pandocfilters==1.2
 pypandoc==0.7.0
+watchdog==0.7.1
